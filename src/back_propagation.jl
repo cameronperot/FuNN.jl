@@ -40,6 +40,8 @@ function compute_dJ_dZ!(NN::NeuralNetwork, l::Int)
 		NN.cache.dZ[l] = NN.cache.dA[l] .* dtanh_dZ(NN, l)
 	elseif NN.params.activation_functions[l] == "logistic"
 		NN.cache.dZ[l] = NN.cache.dA[l] .* dlogistic_dZ(NN, l)
+	else
+		error("Unknown activation function(s) provided in params")
 	end
 end
 
