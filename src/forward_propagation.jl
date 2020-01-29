@@ -8,7 +8,18 @@ function logistic(Z::Array{Float32, 2})
 end
 
 
-g = Dict{String, Function}("relu" => relu, "tanh" => tanh, "logistic" => logistic);
+function softmax(Z::Array{Float32, 2})
+	e = exp.(Z)
+	return e ./ sum(e, dims=1)
+end
+
+
+g = Dict{String, Function}(
+	"relu"     => relu,
+	"tanh"     => tanh,
+	"logistic" => logistic,
+	"softmax"  => softmax,
+)
 
 
 function propagate_forward!(NN::NeuralNetwork, mini_batch::MiniBatch)
@@ -27,13 +38,31 @@ function propagate_forward!(NN::NeuralNetwork, mini_batch::MiniBatch)
 end
 
 
-function cross_entropy(Y::Array{Float32, 2}, Y_hat::Array{Float32, 2}, m)
+function cross_entropy_binary(Y::Array{Float32, 2}, Y_hat::Array{Float32, 2}, m::Float32)
  	return -sum(Y .* log.(Y_hat) .+ (1 .- Y) .* log.(1 .- Y_hat)) / m
 end
 
 
+function cross_entropy_multi(Y::Array{Float32, 2}, Y_hat::Array{Float32, 2}, m::Float32)
+	return -sum(Y .* log.(Y_hat)) / m
+end
+
+
+function mean_squared_error(Y::Array{Float32, 2}, Y_hat::Array{Float32, 2}, m::Float32)
+	return sum((Y .- Y_hat).^2) / 2 / m
+end
+
+
+L = Dict{String, Function}(
+	"cross_entropy_binary" => cross_entropy_binary,
+	"cross_entropy_multi"  => cross_entropy_multi,
+	"mean_squared_error"   => mean_squared_error,
+)
+
+
 function compute_cost!(NN::NeuralNetwork, mini_batch::MiniBatch)
-	NN.J[NN.epoch] += cross_entropy(mini_batch.Y, NN.cache.A[NN.L], size(NN.X, 2))
+	m = Float32(size(NN.X, 2))
+	NN.J[NN.epoch] += L[NN.params.loss_function](mini_batch.Y, NN.cache.A[NN.L], m)
 
 	# Add in regularization if using gradient descent
 	if NN.hparams.optimization == "gd"

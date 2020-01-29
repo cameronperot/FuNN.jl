@@ -14,20 +14,20 @@ function train!(NN::NeuralNetwork, n_epochs::Int)
 end
 
 
-function predict(params::Parameters, X::Array{Real, 2})
+function predict(params::Parameters, X::Array)
 	X  = Float32.(X)
-	gs = NN.params.activation_functions
+	gs = params.activation_functions
 	L  = length(params.layer_sizes)
 
-	A = g[gs[1]](params.W[1] * X .+ NN.params.b[1])
+	A = g[gs[1]](params.W[1] * X .+ params.b[1])
 	for l in 2:L
-		A = g[gs[l]](params.W[l] * A .+ NN.params.b[l])
+		A = g[gs[l]](params.W[l] * A .+ params.b[l])
 	end
 
 	return A
 end
 
 
-function predict(NN::NeuralNetwork, X::Array{Real, 2})
+function predict(NN::NeuralNetwork, X::Array)
 	predict(NN.params, X)
 end

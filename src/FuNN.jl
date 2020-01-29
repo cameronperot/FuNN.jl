@@ -11,8 +11,8 @@ NeuralNetwork,
 train!,
 predict
 
+include("./NeuralNetwork.jl")
 include("./back_propagation.jl")
-include("./Classifier.jl")
 include("./forward_propagation.jl")
 include("./initialization_methods.jl")
 include("./main_methods.jl")

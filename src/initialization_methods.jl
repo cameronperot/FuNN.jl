@@ -23,6 +23,11 @@ function initialize_params!(params_dict)
 		"activation_functions",
 		push!(["relu" for l in 1:L-1], "logistic")
 	)
+	params_dict["loss_function"] = get(
+		params_dict,
+		"loss_function",
+		"cross_entropy_binary"
+	)
 end
 
 

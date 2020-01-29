@@ -3,6 +3,7 @@ mutable struct Parameters
 	b                    ::Array{Array{Float32, 2}, 1}
 	layer_sizes          ::Array{Int, 1}
 	activation_functions ::Array{String, 1}
+	loss_function        ::String
 
 	function Parameters(params_dict)
  		initialize_params!(params_dict)
@@ -11,7 +12,11 @@ mutable struct Parameters
 			params_dict["W"],
 			params_dict["b"],
 			params_dict["layer_sizes"],
-			params_dict["activation_functions"])
+			params_dict["activation_functions"],
+			params_dict["loss_function"]
+		)
+	end
+end
 
 
 function initialize_zeros(W_dims, object_types)
