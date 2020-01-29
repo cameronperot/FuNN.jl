@@ -34,4 +34,13 @@ end
 
 function compute_cost!(NN::NeuralNetwork, mini_batch::MiniBatch)
 	NN.J[NN.epoch] += cross_entropy(mini_batch.Y, NN.cache.A[NN.L], size(NN.X, 2))
+
+	# Add in regularization if using gradient descent
+	if NN.hparams.optimization == "gd"
+		regularization = Float32(0)
+		for l in 1:NN.L
+			regularization += sum(NN.params.W[l].^2)
+		end
+		NN.J[NN.epoch] += regularization * NN.hparams.λ / 2 / m
+	end
 end

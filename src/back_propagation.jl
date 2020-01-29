@@ -52,6 +52,11 @@ function compute_dJ_dW!(NN::NeuralNetwork, l::Int, mini_batch::MiniBatch, m::Flo
 	else
 		NN.cache.dW[l] = (NN.cache.dZ[l] ./ m) * mini_batch.X'
 	end
+
+	# Add in regularization if using gradient descent
+	if NN.hparams.optimization == "gd"
+		NN.cache.dW[l] += (NN.hparams.λ / m) .* NN.params.W[l]
+	end
 end
 
 
