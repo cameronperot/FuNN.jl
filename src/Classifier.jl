@@ -12,6 +12,13 @@ mutable struct Parameters
 			params_dict["b"],
 			params_dict["layer_sizes"],
 			params_dict["activation_functions"])
+
+
+function initialize_zeros(W_dims, object_types)
+	if object_types == "matrices"
+		return [zeros(Float32, n, m) for (n, m) in W_dims]
+	elseif object_types == "vectors"
+		return [zeros(Float32, n, 1) for (n, m) in W_dims]
 	end
 end
 
@@ -28,23 +35,24 @@ mutable struct Cache
 	s_dW ::Array{Array{Float32, 2}, 1}
 	s_db ::Array{Array{Float32, 2}, 1}
 
-	function Cache(params)
-		input_layer_size = params["input_layer_size"]
-		layer_sizes = params["layer_sizes"]
-		W_dims = pushfirst!(copy(layer_sizes), input_layer_size)
+	function Cache(params_dict)
+		# Create array containing the dimensions of the W matrices
+		W_dims = pushfirst!(copy(params_dict["layer_sizes"]), params_dict["input_layer_size"])
+		W_dims = [(W_dims[l+1], W_dims[l]) for l in 1:length(W_dims)-1]
 
-		A = [zeros(Float32, layer_sizes[l], 1) for l in 1:length(layer_sizes)]
-		Z = [zeros(Float32, layer_sizes[l], 1) for l in 1:length(layer_sizes)]
-		dA = [zeros(Float32, layer_sizes[l], 1) for l in 1:length(layer_sizes)]
-		dZ = [zeros(Float32, layer_sizes[l], 1) for l in 1:length(layer_sizes)]
-		dW = [zeros(Float32, W_dims[l+1], W_dims[l]) for l in 1:length(layer_sizes)]
-		db = [zeros(Float32, W_dims[l+1], 1) for l in 1:length(layer_sizes)]
+		# Initialize the cache variables
+		A    = initialize_zeros(W_dims, "vectors")
+		Z    = initialize_zeros(W_dims, "vectors")
+		dA   = initialize_zeros(W_dims, "vectors")
+		dZ   = initialize_zeros(W_dims, "vectors")
+		dW   = initialize_zeros(W_dims, "matrices")
+		db   = initialize_zeros(W_dims, "vectors")
 
-		# Adam and momentum optimization cache
-		v_dW = [zeros(Float32, W_dims[l+1], W_dims[l]) for l in 1:length(layer_sizes)]
-		v_db = [zeros(Float32, W_dims[l+1], 1) for l in 1:length(layer_sizes)]
-		s_dW = [zeros(Float32, W_dims[l+1], W_dims[l]) for l in 1:length(layer_sizes)]
-		s_db = [zeros(Float32, W_dims[l+1], 1) for l in 1:length(layer_sizes)]
+		# v and s are for the Adam and momentum optimization cache
+		v_dW = initialize_zeros(W_dims, "matrices")
+		v_db = initialize_zeros(W_dims, "vectors")
+		s_dW = initialize_zeros(W_dims, "matrices")
+		s_db = initialize_zeros(W_dims, "vectors")
 
 		return new(
 			A,
