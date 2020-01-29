@@ -89,7 +89,7 @@ mutable struct HyperParameters
 			Float32(get(hparams_dict, "learning_rate", 0.01)),
 			get(hparams_dict, "mini_batch_size", 64),
 			get(hparams_dict, "optimization", "gd"),
-			get(hparams_dict, "λ", 0.1),
+			Float32(get(hparams_dict, "λ", 0.1)),
 			Float32(get(hparams_dict, "β", 0.9)),
 			Float32(get(hparams_dict, "β₁", 0.9)),
 			Float32(get(hparams_dict, "β₂", 0.999)),
@@ -124,19 +124,28 @@ mutable struct NeuralNetwork
 		hparams_dict ::Dict=Dict(),
 	)
 
+	# Explicitly typecast to Float32 to ensure all calcs use the same precision
 	X = Float32.(X)
 	Y = Float32.(Y)
-	params_dict = convert(Dict{Any, Any}, params_dict)
+
+	# Explicitly typecast to Any dicts to avoid type errors
+	params_dict  = convert(Dict{Any, Any}, params_dict)
 	hparams_dict = convert(Dict{Any, Any}, hparams_dict)
+
+	# Set values for useful variables
 	params_dict["input_layer_size"] = size(X, 1)
-	params_dict["layer_sizes"] = get(params_dict, "layer_sizes", [3, 1])
-	rng = MersenneTwister(get(params_dict, "seed", 8))
+	params_dict["layer_sizes"]      = get(params_dict, "layer_sizes", [3, 1])
+
+	# Create the rng and seed it with the value from params_dict
+	rng                = MersenneTwister(get(params_dict, "seed", 8))
 	params_dict["rng"] = rng
 
-	params = Parameters(params_dict)
+	# Initialize instances of custom types
+	params  = Parameters(params_dict)
 	hparams = HyperParameters(hparams_dict)
-	cache = Cache(params_dict)
+	cache   = Cache(params_dict)
 
+	# Set starting values of variables
 	L = length(params_dict["layer_sizes"])
 	J = []
 	epoch = 0
