@@ -1,7 +1,7 @@
 function train!(NN::NeuralNetwork, n_epochs::Int)
 	for epoch in 1:n_epochs
 		NN.epoch += 1
-		push!(NN.J, Float32(0))
+		push!(NN.J, 0)
 
 		mini_batches = random_mini_batches(NN)
 		for mini_batch in mini_batches
@@ -14,8 +14,8 @@ function train!(NN::NeuralNetwork, n_epochs::Int)
 end
 
 
-function predict(params::Parameters, X::Array)
-	X  = Float32.(X)
+function predict(params::Parameters, X::Array{T, 2}) where {T <: AbstractFloat}
+	X  = eltype(params.W[1]).(X)
 	gs = params.activation_functions
 	L  = length(params.layer_sizes)
 
@@ -28,6 +28,25 @@ function predict(params::Parameters, X::Array)
 end
 
 
-function predict(NN::NeuralNetwork, X::Array)
+function predict(NN::NeuralNetwork, X::Array{T, 2}) where {T <: AbstractFloat}
 	predict(NN.params, X)
+end
+
+
+function random_mini_batches(NN::NeuralNetwork)
+	m = size(NN.X, 2)
+	K = ceil(m / NN.hparams.mini_batch_size)
+	permutation = randperm(NN.rng, m)
+	mini_batches = MiniBatch[]
+
+	for k in 1:K-1
+		a = Int((k - 1) * NN.hparams.mini_batch_size + 1)
+		b = Int(k * NN.hparams.mini_batch_size)
+		push!(mini_batches, MiniBatch(NN.X[:, permutation][:, a:b], NN.Y[:, permutation][:, a:b]))
+	end
+
+	a = Int((K - 1) * NN.hparams.mini_batch_size + 1)
+	push!(mini_batches, MiniBatch(NN.X[:, permutation][:, a:end], NN.Y[:, permutation][:, a:end]))
+
+	return mini_batches
 end

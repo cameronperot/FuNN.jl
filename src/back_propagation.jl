@@ -19,12 +19,11 @@ end
 
 
 function propagate_back!(NN::NeuralNetwork, mini_batch::MiniBatch)
-	m = Float32(size(mini_batch.X, 2))
 	for l in NN.L:-1:1
 		compute_dJ_dA!(NN, l, mini_batch)
 		compute_dJ_dZ!(NN, l)
-		compute_dJ_dW!(NN, l, mini_batch, m)
-		compute_dJ_db!(NN, l, m)
+		compute_dJ_dW!(NN, l, mini_batch)
+		compute_dJ_db!(NN, l, mini_batch)
 	end
 end
 
@@ -40,7 +39,7 @@ function compute_dJ_dA!(NN::NeuralNetwork, l::Int, mini_batch::MiniBatch)
 		elseif NN.params.loss_function == "mean_squared_error"
 			NN.cache.dA[l] = @. NN.cache.A[NN.L] - mini_batch.Y
 		else
-			error("Unknown loss function provided in params")
+			error("unknown loss function provided in params")
 		end
 	end
 end
@@ -56,25 +55,25 @@ function compute_dJ_dZ!(NN::NeuralNetwork, l::Int)
 	elseif NN.params.activation_functions[l] == "softmax"
 		NN.cache.dZ[l] = NN.cache.dA[l] .* dsoftmax_dZ(NN, l)
 	else
-		error("Unknown activation function(s) provided in params")
+		error("unknown activation function(s) provided in params")
 	end
 end
 
 
-function compute_dJ_dW!(NN::NeuralNetwork, l::Int, mini_batch::MiniBatch, m::Float32)
+function compute_dJ_dW!(NN::NeuralNetwork, l::Int, mini_batch::MiniBatch)
 	if l ≠ 1
-		NN.cache.dW[l] = (NN.cache.dZ[l] ./ m) * NN.cache.A[l-1]'
+		NN.cache.dW[l] = (NN.cache.dZ[l] ./ size(mini_batch.X, 2)) * NN.cache.A[l-1]'
 	else
-		NN.cache.dW[l] = (NN.cache.dZ[l] ./ m) * mini_batch.X'
+		NN.cache.dW[l] = (NN.cache.dZ[l] ./ size(mini_batch.X, 2)) * mini_batch.X'
 	end
 
 	# Add in regularization if using gradient descent
 	if NN.hparams.optimization == "gd"
-		NN.cache.dW[l] += (NN.hparams.λ / m) .* NN.params.W[l]
+		NN.cache.dW[l] += (NN.hparams.λ / size(mini_batch.X, 2)) .* NN.params.W[l]
 	end
 end
 
 
-function compute_dJ_db!(NN::NeuralNetwork, l::Int, m::Float32)
-	NN.cache.db[l] = sum(NN.cache.dZ[l], dims=2) ./ m
+function compute_dJ_db!(NN::NeuralNetwork, l::Int, mini_batch::MiniBatch)
+	NN.cache.db[l] = sum(NN.cache.dZ[l], dims=2) ./ size(mini_batch.X, 2)
 end

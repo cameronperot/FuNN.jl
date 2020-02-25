@@ -14,7 +14,6 @@ predict
 include("./NeuralNetwork.jl")
 include("./back_propagation.jl")
 include("./forward_propagation.jl")
-include("./initialization_methods.jl")
 include("./main_methods.jl")
 include("./update_methods.jl")
 

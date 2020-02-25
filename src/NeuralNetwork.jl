@@ -1,14 +1,42 @@
-mutable struct Parameters
-	W                    ::Array{Array{Float32, 2}, 1}
-	b                    ::Array{Array{Float32, 2}, 1}
+struct Parameters{T <: AbstractFloat}
+	W                    ::Array{Array{T, 2}, 1}
+	b                    ::Array{Array{T, 2}, 1}
 	layer_sizes          ::Array{Int, 1}
 	activation_functions ::Array{String, 1}
 	loss_function        ::String
 
-	function Parameters(params_dict)
- 		initialize_params!(params_dict)
+	function Parameters(T::Type{<:AbstractFloat}, params_dict::Dict)
+		layer_sizes      = params_dict["layer_sizes"]
+		input_layer_size = params_dict["input_layer_size"]
+		rng              = params_dict["rng"]
 
-		return new(
+		L = length(layer_sizes)
+		W = Array{Array{T, 2}, 1}(undef, L)
+		b = Array{Array{T, 2}, 1}(undef, L)
+		for l in 1:L
+			if l ≠ 1
+				W[l] = randn(rng, layer_sizes[l], layer_sizes[l-1]) .* sqrt(2 / layer_sizes[l-1])
+			else
+				W[l] = randn(rng, layer_sizes[l], input_layer_size) .* sqrt(2 / input_layer_size)
+			end
+
+			b[l] = zeros(layer_sizes[l], 1)
+		end
+
+		params_dict["W"] = W
+		params_dict["b"] = b
+		params_dict["activation_functions"] = get(
+			params_dict,
+			"activation_functions",
+			push!(["relu" for l in 1:L-1], "logistic")
+		)
+		params_dict["loss_function"] = get(
+			params_dict,
+			"loss_function",
+			"cross_entropy_binary"
+		)
+
+		return new{T}(
 			params_dict["W"],
 			params_dict["b"],
 			params_dict["layer_sizes"],
@@ -28,19 +56,19 @@ function initialize_zeros(W_dims, object_types)
 end
 
 
-mutable struct Cache
-	A    ::Array{Array{Float32, 2}, 1}
-	Z    ::Array{Array{Float32, 2}, 1}
-	dA   ::Array{Array{Float32, 2}, 1}
-	dZ   ::Array{Array{Float32, 2}, 1}
-	dW   ::Array{Array{Float32, 2}, 1}
-	db   ::Array{Array{Float32, 2}, 1}
-	v_dW ::Array{Array{Float32, 2}, 1}
-	v_db ::Array{Array{Float32, 2}, 1}
-	s_dW ::Array{Array{Float32, 2}, 1}
-	s_db ::Array{Array{Float32, 2}, 1}
+mutable struct Cache{T <: AbstractFloat}
+	A    ::Array{Array{T, 2}, 1}
+	Z    ::Array{Array{T, 2}, 1}
+	dA   ::Array{Array{T, 2}, 1}
+	dZ   ::Array{Array{T, 2}, 1}
+	dW   ::Array{Array{T, 2}, 1}
+	db   ::Array{Array{T, 2}, 1}
+	v_dW ::Array{Array{T, 2}, 1}
+	v_db ::Array{Array{T, 2}, 1}
+	s_dW ::Array{Array{T, 2}, 1}
+	s_db ::Array{Array{T, 2}, 1}
 
-	function Cache(params_dict)
+	function Cache(T::Type{<:AbstractFloat}, params_dict::Dict)
 		# Create array containing the dimensions of the W matrices
 		W_dims = pushfirst!(copy(params_dict["layer_sizes"]), params_dict["input_layer_size"])
 		W_dims = [(W_dims[l+1], W_dims[l]) for l in 1:length(W_dims)-1]
@@ -59,7 +87,7 @@ mutable struct Cache
 		s_dW = initialize_zeros(W_dims, "matrices")
 		s_db = initialize_zeros(W_dims, "vectors")
 
-		return new(
+		return new{T}(
 			A,
 			Z,
 			dA,
@@ -75,63 +103,65 @@ mutable struct Cache
 end
 
 
-mutable struct HyperParameters
-	learning_rate   ::Float32
+struct HyperParameters{T <: AbstractFloat}
+	learning_rate   ::T
 	mini_batch_size ::Int
 	optimization    ::String
-	λ               ::Float32
+	λ               ::T
 	# Momentum optimization parameters
-	β               ::Float32
+	β               ::T
 	# Adam optimization parameters
-	β₁              ::Float32
-	β₂              ::Float32
-	ϵ               ::Float32
+	β₁              ::T
+	β₂              ::T
+	ϵ               ::T
 	t               ::Int
 
-	function HyperParameters(hparams_dict)
+	function HyperParameters(T::Type{<:AbstractFloat}, hparams_dict::Dict)
 
-		return new(
-			Float32(get(hparams_dict, "learning_rate", 0.01)),
+		return new{T}(
+			convert(T, get(hparams_dict, "learning_rate", 0.01)),
 			get(hparams_dict, "mini_batch_size", 64),
 			get(hparams_dict, "optimization", "gd"),
-			Float32(get(hparams_dict, "λ", 0.1)),
-			Float32(get(hparams_dict, "β", 0.9)),
-			Float32(get(hparams_dict, "β₁", 0.9)),
-			Float32(get(hparams_dict, "β₂", 0.999)),
-			Float32(get(hparams_dict, "ϵ", 1e-8)),
+			convert(T, get(hparams_dict, "λ", 0.1)),
+			convert(T, get(hparams_dict, "β", 0.9)),
+			convert(T, get(hparams_dict, "β₁", 0.9)),
+			convert(T, get(hparams_dict, "β₂", 0.999)),
+			convert(T, get(hparams_dict, "ϵ", 1e-8)),
 			get(hparams_dict, "t", 0),
 		)
 	end
 end
 
 
-mutable struct MiniBatch
-	X::Array{Float32, 2}
-	Y::Array{Float32, 2}
+struct MiniBatch{T <: AbstractFloat}
+	X::Array{T, 2}
+	Y::Array{T, 2}
 end
 
 
-mutable struct NeuralNetwork
-	X       ::Array{Float32, 2}
-	Y       ::Array{Float32, 2}
+mutable struct NeuralNetwork{T <: AbstractFloat}
+	X       ::Array{T, 2}
+	Y       ::Array{T, 2}
+	m       ::T
 	L       ::Int
 	params  ::Parameters
 	hparams ::HyperParameters
 	cache   ::Cache
 	rng     ::MersenneTwister
-	J       ::Array{Float32, 1}
+	J       ::Array{T, 1}
 	epoch   ::Int
 
 	function NeuralNetwork(
 		X            ::Array,
 		Y            ::Array;
+		T            ::Type{<:AbstractFloat}=Float32,
 		params_dict  ::Dict=Dict(),
 		hparams_dict ::Dict=Dict(),
 	)
 
-	# Explicitly typecast to Float32 to ensure all calcs use the same precision
-	X = Float32.(X)
-	Y = Float32.(Y)
+	# Explicitly typecast to T to ensure all calcs use the same precision
+	X = convert(Matrix{T}, X)
+	Y = convert(Matrix{T}, Y)
 
 	# Explicitly typecast to Any dicts to avoid type errors
 	params_dict  = convert(Dict{Any, Any}, params_dict)
@@ -146,18 +176,20 @@ mutable struct NeuralNetwork
 	params_dict["rng"] = rng
 
 	# Initialize instances of custom types
-	params  = Parameters(params_dict)
-	hparams = HyperParameters(hparams_dict)
-	cache   = Cache(params_dict)
+	params  = Parameters(T, params_dict)
+	hparams = HyperParameters(T, hparams_dict)
+	cache   = Cache(T, params_dict)
 
 	# Set starting values of variables
+	m = convert(T, size(X, 2))
 	L = length(params_dict["layer_sizes"])
 	J = []
 	epoch = 0
 
-	NN = new(
+	NN = new{T}(
 		X,
 		Y,
+		m,
 		L,
 		params,
 		hparams,
@@ -168,4 +200,3 @@ mutable struct NeuralNetwork
 	)
 	end
 end
-
