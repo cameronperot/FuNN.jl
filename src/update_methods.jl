@@ -38,11 +38,11 @@ end
 
 
 function update_params!(NN::NeuralNetwork)
-	if NN.hparams.optimization == "gd"
+	if NN.hparams.optimization == :gd
 		gradient_descent!(NN)
-	elseif NN.hparams.optimization == "momentum"
+	elseif NN.hparams.optimization == :momentum
 		gradient_descent_momentum!(NN)
-	elseif NN.hparams.optimization == "adam"
+	elseif NN.hparams.optimization == :adam
 		gradient_descent_adam!(NN)
 	else
 		error("Unknown optimization method provided in hparams")

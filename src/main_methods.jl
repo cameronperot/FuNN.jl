@@ -19,9 +19,9 @@ function predict(params::Parameters, X::Array{T, 2}) where {T <: AbstractFloat}
 	gs = params.activation_functions
 	L  = length(params.layer_sizes)
 
-	A = g[gs[1]](params.W[1] * X .+ params.b[1])
+	A = gs[1](params.W[1] * X .+ params.b[1])
 	for l in 2:L
-		A = g[gs[l]](params.W[l] * A .+ params.b[l])
+		A = gs[l](params.W[l] * A .+ params.b[l])
 	end
 
 	return A

@@ -32,11 +32,11 @@ function compute_dJ_dA!(NN::NeuralNetwork, l::Int, mini_batch::MiniBatch)
 	if l ≠ NN.L
 		NN.cache.dA[l] = NN.params.W[l+1]' * NN.cache.dZ[l+1]
 	else
-		if NN.params.loss_function == "cross_entropy_binary"
+		if NN.params.loss_function == cross_entropy_binary
 			NN.cache.dA[l] = @. -mini_batch.Y / NN.cache.A[NN.L] + (1 - mini_batch.Y) / (1 - NN.cache.A[NN.L])
-		elseif NN.params.loss_function == "cross_entropy_multi"
+		elseif NN.params.loss_function == cross_entropy_multi
 			NN.cache.dA[l] = @. -mini_batch.Y / NN.cache.A[NN.L]
-		elseif NN.params.loss_function == "mean_squared_error"
+		elseif NN.params.loss_function == mean_squared_error
 			NN.cache.dA[l] = @. NN.cache.A[NN.L] - mini_batch.Y
 		else
 			error("unknown loss function provided in params")
@@ -46,13 +46,13 @@ end
 
 
 function compute_dJ_dZ!(NN::NeuralNetwork, l::Int)
-	if NN.params.activation_functions[l] == "tanh"
+	if NN.params.activation_functions[l] == tanh
 		NN.cache.dZ[l] = NN.cache.dA[l] .* drelu_dZ(NN, l)
-	elseif NN.params.activation_functions[l] == "relu"
+	elseif NN.params.activation_functions[l] == relu
 		NN.cache.dZ[l] = NN.cache.dA[l] .* dtanh_dZ(NN, l)
-	elseif NN.params.activation_functions[l] == "logistic"
+	elseif NN.params.activation_functions[l] == logistic
 		NN.cache.dZ[l] = NN.cache.dA[l] .* dlogistic_dZ(NN, l)
-	elseif NN.params.activation_functions[l] == "softmax"
+	elseif NN.params.activation_functions[l] == softmax
 		NN.cache.dZ[l] = NN.cache.dA[l] .* dsoftmax_dZ(NN, l)
 	else
 		error("unknown activation function(s) provided in params")
@@ -68,7 +68,7 @@ function compute_dJ_dW!(NN::NeuralNetwork, l::Int, mini_batch::MiniBatch)
 	end
 
 	# Add in regularization if using gradient descent
-	if NN.hparams.optimization == "gd"
+	if NN.hparams.optimization == :gd
 		NN.cache.dW[l] += (NN.hparams.λ / size(mini_batch.X, 2)) .* NN.params.W[l]
 	end
 end

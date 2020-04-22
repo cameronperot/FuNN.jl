@@ -27,11 +27,11 @@ R_test = X_test[1, :].^2 + X_test[2, :].^2;
 Y_test = (R_test .< 0.75) * 1.0;
 Y_test = reshape(Y_test, (1, length(Y_test)));
 
-# Set the layer sizes and any other desired parameters
-params_dict = Dict("layer_sizes" => [4, 1]);
+# Set the layer sizes and activation functions
+params_dict = Dict(:layer_sizes => [4, 1], activation_functions => [relu, logistic]);
 
 # Set the hyperparameters
-hparams_dict = Dict("learning_rate" => 0.01, "optimization" => "momentum");
+hparams_dict = Dict(:learning_rate => 0.01, :optimization => :momentum);
 
 # Initialize the NeuralNetwork type (we can set the precision with the T kwarg)
 NN = NeuralNetwork(X, Y, T=Float32, params_dict=params_dict, hparams_dict=hparams_dict);
