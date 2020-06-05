@@ -28,7 +28,7 @@ Y_test = (R_test .< 0.75) * 1.0;
 Y_test = reshape(Y_test, (1, length(Y_test)));
 
 # Set the layer sizes and activation functions
-params_dict = Dict(:layer_sizes => [4, 1], activation_functions => [relu, logistic]);
+params_dict = Dict(:layer_sizes => [4, 1], :activation_functions => [relu, logistic]);
 
 # Set the hyperparameters
 hparams_dict = Dict(:learning_rate => 0.01, :optimization => :momentum);
@@ -43,16 +43,18 @@ train!(NN, 1000);
 Y_hat = predict(NN, X) .> 0.5;
 println("Train Accuracy: ", sum(Y_hat .== Y) / size(Y, 2))
 
-> Train Accuracy: 0.903
-
 # Let's check the accuracy on the test set
 Y_hat_test = predict(NN, X_test) .> 0.5;
 println("Test Accuracy: ", sum(Y_hat_test .== Y_test) / size(Y_test, 2))
 
-> Test Accuracy: 0.9123
-
-# We can look at the cost function as well
-plot(1:length(NN.J), NN.J, xaxis="epoch", yaxis="cost", legend=false)
+# We can look at the loss as well
+plot(1:length(NN.J), NN.J, xaxis="epoch", yaxis="loss", legend=false)
 ```
 
-![](images/example_cost.png)
+Output:
+```
+Train Accuracy: 0.903
+Test Accuracy: 0.9123
+```
+
+![](images/example_loss.png)
