@@ -50,3 +50,21 @@ function random_mini_batches(NN::NeuralNetwork)
 
 	return mini_batches
 end
+
+
+function one_cold(Y)
+	Y_out = zeros(Float32, size(Y, 2))
+	for i in 1:size(Y, 2)
+		Y_out[i] = findmax(Y[:, i])[2]
+	end
+	return Y_out
+end
+
+
+function one_hot(Y, n_classes)
+	Y_out = zeros(Float32, n_classes, size(Y, 2))
+	for i in 1:size(Y, 2)
+		Y_out[Y[i] + 1, i] = 1
+	end
+	return Y_out
+end

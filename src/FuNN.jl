@@ -10,6 +10,8 @@ NeuralNetwork,
 # Main methods
 train!,
 predict,
+one_hot,
+one_cold,
 
 # Activation and loss functions
 relu,

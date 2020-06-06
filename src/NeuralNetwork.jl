@@ -103,7 +103,7 @@ mutable struct Cache{T <: AbstractFloat}
 end
 
 
-struct HyperParameters{T <: AbstractFloat}
+mutable struct HyperParameters{T <: AbstractFloat}
 	learning_rate   ::T
 	mini_batch_size ::Int
 	optimization    ::Symbol
