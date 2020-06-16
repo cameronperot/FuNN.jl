@@ -33,8 +33,8 @@ params_dict = Dict(:layer_sizes => [4, 1], :activation_functions => [relu, logis
 # Set the hyperparameters
 hparams_dict = Dict(:learning_rate => 0.01, :optimization => :momentum);
 
-# Initialize the NeuralNetwork type (we can set the precision with the T kwarg)
-NN = NeuralNetwork(X, Y, T=Float32, params_dict=params_dict, hparams_dict=hparams_dict);
+# Initialize the NeuralNetwork type (with the precision set to Float32)
+NN = NeuralNetwork{Float32}(X, Y, params_dict=params_dict, hparams_dict=hparams_dict);
 
 # Train the neural network over 1000 epochs
 train!(NN, 1000);

@@ -4,22 +4,22 @@ using Random
 
 export
 
-# Classifier
-NeuralNetwork,
+    # Classifier
+    NeuralNetwork,
 
-# Main methods
-train!,
-predict,
-one_hot,
-one_cold,
+    # Main methods
+    train!,
+    predict,
+    one_hot,
+    one_cold,
 
-# Activation and loss functions
-relu,
-logistic,
-softmax,
-cross_entropy_binary,
-cross_entropy_multi,
-mean_squared_error
+    # Activation and loss functions
+    relu,
+    logistic,
+    softmax,
+    cross_entropy_binary,
+    cross_entropy_multi,
+    mean_squared_error
 
 include("./NeuralNetwork.jl")
 include("./back_propagation.jl")
